@@ -1,9 +1,10 @@
 import express from "express";
-import mongoose from "mongoose";
+import mongoose, { connect } from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
 import assignmentRoutes from "./routes/assignmentRoutes.js";
 import submissionRoutes from "./routes/submissionRoutes.js";
+import connectDB from "./config/db.js";
 
 // Load environment variables
 dotenv.config();
@@ -16,13 +17,7 @@ app.use(cors());
 app.use(express.json());
 
 // MongoDB Connection
-mongoose
-  .connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => console.log("MongoDB connected"))
-  .catch((err) => console.log("MongoDB connection error:", err));
+connectDB();
 
 // Routes
 app.use("/api/assignments", assignmentRoutes);
