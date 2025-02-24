@@ -1,5 +1,11 @@
+import OpenAI from "openai";
 import Submission from "../models/Submission.js";
 import Assignment from "../models/Assignment.js";
+
+//Initialize the OpenAI
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY, // Add your OpenAI API key to .env
+});
 
 // Submit an assignment
 export const submitAssignment = async (req, res) => {
@@ -20,6 +26,29 @@ export const submitAssignment = async (req, res) => {
       });
     }
 
+    // AI Grading for Essay
+    if (essay) {
+      const prompt = `Evaluate this essay based on the following rubric:
+      - Grammar: 40%
+      - Relevance: 40%
+      - Creativity: 20%
+      
+      Essay: ${essay}
+      
+      Provide a score out of 10 and feedback.`;
+
+      const aiResponse = await openai.chat.completions.create({
+        model: "gpt-3.5-turbo",
+        messages: [{ role: "user", content: prompt }],
+        max_tokens: 100,
+      });
+
+      const aiFeedback = aiResponse.choices[0].message.content;
+      const aiScore = parseFloat(aiFeedback.match(/\d+/)[0]); // Extract score from feedback
+      score += aiScore; // Add AI score to total score
+    }
+
+    //Save Submission
     const submission = new Submission({
       assignmentId,
       studentId,
