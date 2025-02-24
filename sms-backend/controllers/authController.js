@@ -37,7 +37,7 @@ export const login = async (req, res) => {
     // Generate token
     const token = jwtManager(user);
 
-    res.status(200).json({ token });
+    res.status(200).json({ token, role: user.role });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
