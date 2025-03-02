@@ -1,44 +1,44 @@
-import User from "../models/User";
+import User from "../models/User.js";
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
+// User Registration
 export const register = async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
 
-    //Check if user exists
-    const user = await User.findOne({ email });
-    if (user) {
-      return res.status(400).json({ msg: "User already exists" });
+    // Check if the user already exists
+    let user = await User.findOne({ email });
+    if (user) return res.status(400).json({ msg: "User already exists" });
 
-      //Hash Password
-      const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash(password, salt);
+    // Hash the password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
-      //Create new user
-      user = new User({ name, email, password: hashedPassword, role });
-      await user.save();
+    // Create new user
+    user = new User({ name, email, password: hashedPassword, role });
+    await user.save();
 
-      res.status(201).json({ msg: "User created successfully" });
-    }
+    res.status(201).json({ msg: "User registered successfully" });
   } catch (err) {
-    res.status(500).json({ msg: err.message });
+    res.status(500).json({ msg: "Server Error" });
   }
 };
 
-// Login User
+// User Login
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    //Check if user exists
+    // Check if user exists
     const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ msg: "Invalid Credentials" });
+    if (!user) return res.status(400).json({ msg: "Invalid Credentials" });
 
-    //Compare Password
+    // Compare password
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(404).json({ msg: "Invalid Credentials" });
+    if (!isMatch) return res.status(400).json({ msg: "Invalid Credentials" });
 
-    //Generate JWT Token
+    // Generate JWT Token
     const token = jwt.sign(
       { userId: user._id, role: user.role },
       process.env.JWT_SECRET,
@@ -61,12 +61,11 @@ export const login = async (req, res) => {
   }
 };
 
-export const protect = async (req, res) => {
+// Protected Route (Verify Token)
+export const protect = async (req, res, next) => {
   const token = req.header("Authorization");
   if (!token)
-    return res
-      .status(401)
-      .json({ msg: "Token is required, Authorization Denied" });
+    return res.status(401).json({ msg: "No token, authorization denied" });
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);

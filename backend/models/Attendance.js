@@ -13,5 +13,5 @@ const attendanceSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const Attendance = mongoose.Model("Attendance", attendanceSchema);
+const Attendance = mongoose.model("Attendance", attendanceSchema);
 export default Attendance;

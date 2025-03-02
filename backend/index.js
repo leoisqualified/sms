@@ -4,6 +4,8 @@ import cors from "cors";
 import DBConnect from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import studentRoutes from "./routes/studentRoutes.js";
+import attendanceRoutes from "./routes/attendanceRoutes.js";
+import feeRoutes from "./routes/feeRoutes.js";
 
 const app = express();
 
@@ -18,6 +20,8 @@ DBConnect();
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/students", studentRoutes);
+app.use("/api/attendance", attendanceRoutes);
+app.use("/api/fees", feeRoutes);
 
 // Server Listening
 const PORT = process.env.PORT;
